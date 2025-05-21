@@ -4,14 +4,14 @@ namespace Prescriptions.DTOs;
 
 public class NewPrescriptionDto
 {
-    public PatientDto Patient { get; set; }
+    public NewPatientDto Patient { get; set; }
     public List<MedicamentDto> MedicamentsDto { get; set; }
     public DateTime Date { get; set; }
     public DateTime DueDate { get; set; }
     public DoctorDto Doctor { get; set; }
 }
 
-public class PatientDto
+public class NewPatientDto
 {
     public int IdPatient { get; set; }
     public string FirstName { get; set; }
