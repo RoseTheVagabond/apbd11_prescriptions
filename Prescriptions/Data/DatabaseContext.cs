@@ -17,6 +17,27 @@ public class DatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<PrescriptionMedicament>()
+            .HasKey(pm => new { pm.IdMedicament, pm.IdPrescription });
         
+        modelBuilder.Entity<Prescription>()
+            .HasOne<Patient>()
+            .WithMany()
+            .HasForeignKey(p => p.IdPatient);
+            
+        modelBuilder.Entity<Prescription>()
+            .HasOne<Doctor>()
+            .WithMany()
+            .HasForeignKey(p => p.IdDoctor);
+
+        modelBuilder.Entity<PrescriptionMedicament>()
+            .HasOne<Medicament>()
+            .WithMany()
+            .HasForeignKey(pm => pm.IdMedicament);
+
+        modelBuilder.Entity<PrescriptionMedicament>()
+            .HasOne<Prescription>()
+            .WithMany()
+            .HasForeignKey(pm => pm.IdPrescription);
     }
 }

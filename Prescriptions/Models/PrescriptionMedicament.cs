@@ -8,7 +8,6 @@ namespace Prescriptions.Models;
 [PrimaryKey(nameof(IdMedicament), nameof(IdPrescription))]
 public class PrescriptionMedicament
 {
-    [ForeignKey("Medicament")]
     public int IdMedicament { get; set; }
     public int IdPrescription { get; set; }
     public int? Dose { get; set; }

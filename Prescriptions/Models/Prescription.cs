@@ -9,8 +9,6 @@ public class Prescription
     public int IdPrescription { get; set; }
     public DateTime Date { get; set; }
     public DateTime DueDate { get; set; }
-    [ForeignKey("Patient")]
     public int IdPatient { get; set; }
-    [ForeignKey("Doctor")]
     public int IdDoctor { get; set; }
 }
