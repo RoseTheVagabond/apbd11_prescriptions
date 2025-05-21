@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Prescriptions.Models;
 
 [PrimaryKey(nameof(IdMedicament), nameof(IdPrescription))]
-public class Prescription_Medicament
+public class PrescriptionMedicament
 {
     [ForeignKey("Medicament")]
     public int IdMedicament { get; set; }
