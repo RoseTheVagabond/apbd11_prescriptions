@@ -21,7 +21,7 @@ public class PrescriptionsController : ControllerBase
         try
         {
             var prescriptionId = await _dbService.CreatePrescriptionAsync(prescription);
-            return Created($"/api/prescriptions/{prescriptionId}", new { IdPrescription = prescriptionId });
+            return Created($"{prescriptionId}", new { IdPrescription = prescriptionId });
         }
         catch (ArgumentException ex)
         {
