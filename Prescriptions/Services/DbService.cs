@@ -96,6 +96,7 @@ public class DbService : IDbService
                 {
                     IdPrescription = prescription.IdPrescription,
                     IdMedicament = medicamentDto.IdMedicament,
+                    Dose = medicamentDto.Dose, // Now this property exists
                     Details = medicamentDto.Description
                 };
                 _context.PrescriptionMedicaments.Add(prescriptionMedicament);
@@ -116,6 +117,40 @@ public class DbService : IDbService
     {
         var patient = await _context.Patients
             .Where(p => p.IdPatient == idPatient)
+            .Select(p => new PatientDto
+            {
+                IdPatient = p.IdPatient,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                BirthDate = p.BirthDate,
+                Prescriptions = _context.Prescriptions
+                    .Where(pr => pr.IdPatient == idPatient)
+                    .OrderBy(pr => pr.DueDate)
+                    .Select(pr => new PrescriptionDetailsDto
+                    {
+                        IdPrescription = pr.IdPrescription,
+                        Date = pr.Date,
+                        DueDate = pr.DueDate,
+                        Doctor = new DoctorDetailsDto
+                        {
+                            IdDoctor = pr.IdDoctor,
+                            FirstName = _context.Doctors.Where(d => d.IdDoctor == pr.IdDoctor).Select(d => d.FirstName).FirstOrDefault(),
+                            LastName = _context.Doctors.Where(d => d.IdDoctor == pr.IdDoctor).Select(d => d.LastName).FirstOrDefault(),
+                            Email = _context.Doctors.Where(d => d.IdDoctor == pr.IdDoctor).Select(d => d.Email).FirstOrDefault()
+                        },
+                        Medicaments = _context.PrescriptionMedicaments
+                            .Where(pm => pm.IdPrescription == pr.IdPrescription)
+                            .Select(pm => new MedicamentDetailsDto
+                            {
+                                IdMedicament = pm.IdMedicament,
+                                Name = _context.Medicaments.Where(m => m.IdMedicament == pm.IdMedicament).Select(m => m.Name).FirstOrDefault(),
+                                Description = _context.Medicaments.Where(m => m.IdMedicament == pm.IdMedicament).Select(m => m.Description).FirstOrDefault(),
+                                Type = _context.Medicaments.Where(m => m.IdMedicament == pm.IdMedicament).Select(m => m.Type).FirstOrDefault(),
+                                Dose = pm.Dose,
+                                Details = pm.Details
+                            }).ToList()
+                    }).ToList()
+            })
             .FirstOrDefaultAsync();
 
         if (patient == null)
@@ -123,42 +158,6 @@ public class DbService : IDbService
             throw new ArgumentException($"Patient with ID {idPatient} not found.");
         }
 
-        var prescriptions = await _context.Prescriptions
-            .Where(p => p.IdPatient == idPatient)
-            .OrderBy(p => p.DueDate)
-            .Select(p => new PrescriptionDetailsDto
-            {
-                IdPrescription = p.IdPrescription,
-                Date = p.Date,
-                DueDate = p.DueDate,
-                Doctor = new DoctorDetailsDto
-                {
-                    IdDoctor = p.IdDoctor,
-                    FirstName = _context.Doctors.Where(d => d.IdDoctor == p.IdDoctor).Select(d => d.FirstName).FirstOrDefault(),
-                    LastName = _context.Doctors.Where(d => d.IdDoctor == p.IdDoctor).Select(d => d.LastName).FirstOrDefault(),
-                    Email = _context.Doctors.Where(d => d.IdDoctor == p.IdDoctor).Select(d => d.Email).FirstOrDefault()
-                },
-                Medicaments = _context.PrescriptionMedicaments
-                    .Where(pm => pm.IdPrescription == p.IdPrescription)
-                    .Select(pm => new MedicamentDetailsDto
-                    {
-                        IdMedicament = pm.IdMedicament,
-                        Name = _context.Medicaments.Where(m => m.IdMedicament == pm.IdMedicament).Select(m => m.Name).FirstOrDefault(),
-                        Description = _context.Medicaments.Where(m => m.IdMedicament == pm.IdMedicament).Select(m => m.Description).FirstOrDefault(),
-                        Type = _context.Medicaments.Where(m => m.IdMedicament == pm.IdMedicament).Select(m => m.Type).FirstOrDefault(),
-                        Dose = pm.Dose,
-                        Details = pm.Details
-                    }).ToList()
-            })
-            .ToListAsync();
-
-        return new PatientDto
-        {
-            IdPatient = patient.IdPatient,
-            FirstName = patient.FirstName,
-            LastName = patient.LastName,
-            BirthDate = patient.BirthDate,
-            Prescriptions = prescriptions
-        };
+        return patient;
     }
 }
