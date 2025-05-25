@@ -19,7 +19,6 @@ public class DbService : IDbService
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // Validate the prescription
             if (prescriptionDto.MedicamentsDto.Count > 10)
             {
                 throw new ArgumentException("A prescription can include a maximum of 10 medications.");
@@ -29,15 +28,13 @@ public class DbService : IDbService
             {
                 throw new ArgumentException("DueDate must be greater than or equal to Date.");
             }
-
-            // Check if doctor exists
+            
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.IdDoctor == prescriptionDto.Doctor.IdDoctor);
             if (doctor == null)
             {
                 throw new ArgumentException($"Doctor with ID {prescriptionDto.Doctor.IdDoctor} does not exist.");
             }
-
-            // Check if all medicaments exist
+            
             foreach (var medicamentDto in prescriptionDto.MedicamentsDto)
             {
                 var medicament = await _context.Medicaments.FirstOrDefaultAsync(m => m.IdMedicament == medicamentDto.IdMedicament);
@@ -46,15 +43,13 @@ public class DbService : IDbService
                     throw new ArgumentException($"Medicament with ID {medicamentDto.IdMedicament} does not exist.");
                 }
             }
-
-            // Check if patient exists, if not, create a new one
+            
             Patient patient;
             if (prescriptionDto.Patient.IdPatient != 0)
             {
                 patient = await _context.Patients.FirstOrDefaultAsync(p => p.IdPatient == prescriptionDto.Patient.IdPatient);
                 if (patient == null)
                 {
-                    // Create a new patient
                     patient = new Patient
                     {
                         FirstName = prescriptionDto.Patient.FirstName,
@@ -67,7 +62,6 @@ public class DbService : IDbService
             }
             else
             {
-                // Create a new patient
                 patient = new Patient
                 {
                     FirstName = prescriptionDto.Patient.FirstName,
@@ -77,8 +71,7 @@ public class DbService : IDbService
                 _context.Patients.Add(patient);
                 await _context.SaveChangesAsync();
             }
-
-            // Create the prescription
+            
             var prescription = new Prescription
             {
                 Date = prescriptionDto.Date,
@@ -88,8 +81,7 @@ public class DbService : IDbService
             };
             _context.Prescriptions.Add(prescription);
             await _context.SaveChangesAsync();
-
-            // Add prescription medicaments
+            
             foreach (var medicamentDto in prescriptionDto.MedicamentsDto)
             {
                 var prescriptionMedicament = new PrescriptionMedicament
